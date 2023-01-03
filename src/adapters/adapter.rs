@@ -1,5 +1,7 @@
-use std::{path::Path, error::Error}; 
+use std::{io, path::Path};
 pub trait Adapter {
-    fn new(path: &'static Path) -> Result<Self, Error>;
-    fn name(&self) -> &'static str; 
+    fn new(path: &Path) -> Result<Self, io::Error>
+    where
+        Self: Sized;
+    fn name(&self) -> &str;
 }
