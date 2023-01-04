@@ -1,6 +1,6 @@
-use std::{io, path::Path};
+use std::io;
 pub trait Adapter {
-    fn new(path: &Path) -> Result<Self, io::Error>
+    fn new(path: &String) -> Result<Self, io::Error>
     where
         Self: Sized;
     fn name(&self) -> &str;

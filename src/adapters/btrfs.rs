@@ -1,29 +1,29 @@
 use crate::adapters::adapter::Adapter;
-use nix::sys::statfs::BTRFS_SUPER_MAGIC;
+use nix::sys::statfs::{statfs, BTRFS_SUPER_MAGIC};
 use nix::sys::statvfs::statvfs;
+
 use std::io::{self, ErrorKind};
-use std::path::Path;
 pub struct BtrfsAdapter {
-    path: &Path,
+    path: Box<String>,
 }
 impl Adapter for BtrfsAdapter {
-    fn new(path: &Path) -> Result<Self, io::Error> {
-        let this = statvfs(path);
+    fn new(path: &String) -> Result<Self, io::Error> {
+        println!("{}", path);
+        let this = statfs(path.as_str());
         let t = match this {
             Ok(t) => t,
             Err(e) => return Err(e.into()),
         };
 
-        if BTRFS_SUPER_MAGIC.0 != t.filesystem_id().try_into().unwrap() {
+        if BTRFS_SUPER_MAGIC != t.filesystem_type() {
             return Err(io::Error::new(ErrorKind::Other, "Not a BTRFS filesystem."));
         }
-        return Ok(BtrfsAdapter { path });
+        return Ok(BtrfsAdapter {
+            path: Box::new(path.clone()),
+        });
     }
 
     fn name(&self) -> &str {
-        return self
-            .path
-            .to_str()
-            .expect("Could not convert path to string.");
+        return &self.path;
     }
 }
